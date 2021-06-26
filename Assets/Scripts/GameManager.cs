@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     static public int health = 2, score = 0, pellets;
 
     static public bool paused;
+    static Player player;
     static RedGhost redGhost;
     static BlueGhost blueGhost;
     static OrangeGhost orangeGhost;
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour
         blueGhost = FindObjectOfType<BlueGhost>();
         orangeGhost = FindObjectOfType<OrangeGhost>();
         pinkGhost = FindObjectOfType<PinkGhost>();
+        player = FindObjectOfType<Player>();
 
         shit = piss; //One big error handler
     }
@@ -59,13 +61,13 @@ public class GameManager : MonoBehaviour
             RaycastHit2D upRay = Physics2D.Raycast(new Vector2(nodePosition.x, nodePosition.y + 0.11f), new Vector2(0, 1));
             RaycastHit2D downRay = Physics2D.Raycast(new Vector2(nodePosition.x, nodePosition.y - 0.11f), new Vector2(0, -1));
             if (leftRay.collider != null && (leftRay.collider.tag == "Node" || leftRay.collider.tag == "Left Teleporter"))
-                n.GetComponent<Node>().LeftNode = leftRay.collider.gameObject;
+                n.GetComponent<Node>().neighbors.Add(leftRay.collider.gameObject.GetComponent<Node>());
             if (rightRay.collider != null && (rightRay.collider.tag == "Node" || rightRay.collider.tag == "Right Teleporter"))
-                n.GetComponent<Node>().RightNode = rightRay.collider.gameObject;
+                n.GetComponent<Node>().neighbors.Add(rightRay.collider.gameObject.GetComponent<Node>());
             if (upRay.collider != null && upRay.collider.tag == "Node")
-                n.GetComponent<Node>().UpNode = upRay.collider.gameObject;
+                n.GetComponent<Node>().neighbors.Add(upRay.collider.gameObject.GetComponent<Node>());
             if (downRay.collider != null && downRay.collider.tag == "Node")
-                n.GetComponent<Node>().DownNode = downRay.collider.gameObject;
+                n.GetComponent<Node>().neighbors.Add(downRay.collider.gameObject.GetComponent<Node>());
         }
     }
 
@@ -90,6 +92,7 @@ public class GameManager : MonoBehaviour
         Player player = FindObjectOfType<Player>();
         player.transform.position = new Vector2(1, -4);
         player.isMoving = false;
+        player.preNode = null;
         player.nextNode = player.startNode;
         player.moveDir = Vector2.right;
 

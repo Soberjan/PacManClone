@@ -1,5 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
-//ИЗМЕНИТЬ НАЗВАНИЯ ПЕРЕМЕННЫХ И ФУНКЦИЙ!!!!!!!!
+
 public class Player : MonoBehaviour
 {
     public float speed = 5;
@@ -11,7 +12,8 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        GameObject dir = HandleInput();
+        GameObject dir;
+        dir = HandleInput();
 
         if (isMoving)
             ProcessMovingInput(dir);
@@ -33,17 +35,30 @@ public class Player : MonoBehaviour
 
     GameObject HandleInput()
     {
-        // if (nextNode.tag != "Right Teleporter" && nextNode.tag != "Left Teleporter")
-        // {
-            if (Input.GetKeyDown(KeyCode.DownArrow))
-                return nextNode.GetComponent<Node>().DownNode;
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
-                return nextNode.GetComponent<Node>().UpNode;
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
-                return nextNode.GetComponent<Node>().LeftNode;
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
-                return nextNode.GetComponent<Node>().RightNode;
-        //}
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+            return ChoosePreNode("LeftNode");
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+            return ChoosePreNode("RightNode");
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+            return ChoosePreNode("DownNode");
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+            return ChoosePreNode("UpNode");
+        return null;
+    }
+
+    GameObject ChoosePreNode(string nodeType)
+    {
+        foreach(Node n in nextNode.GetComponent<Node>().neighbors)
+        {
+            if (nodeType == "LeftNode" && n.transform.position.x < nextNode.transform.position.x)
+                return n.gameObject;
+            else if (nodeType == "RightNode" && n.transform.position.x > nextNode.transform.position.x)
+                return n.gameObject;
+            else if (nodeType == "DownNode" && n.transform.position.y < nextNode.transform.position.y)
+                return n.gameObject;
+            else if (nodeType == "UpNode" && n.transform.position.y > nextNode.transform.position.y)
+                return n.gameObject;
+        }
         return null;
     }
 
@@ -79,47 +94,31 @@ public class Player : MonoBehaviour
 
     void ArriveAtNode()
     {
-        // if (nextNode.tag == "Right Teleporter")
-        // {
-        //     transform.position = new Vector2(-16, 0);
-        //     prevNode = leftTeleporter;
-        //     nextNode = leftPreTeleporter;
-        //     return ;
-        // }
-        // if (nextNode.tag == "Left Teleporter")
-        // {
-        //     transform.position = new Vector2(16, 0);
-        //     prevNode = rightTeleporter;
-        //     nextNode = rightPreTeleporter;
-        //     return ;
-        // }
+        if (nextNode == rightTeleporter)
+        {
+            transform.position = new Vector2(-16, 0);
+            prevNode = leftTeleporter;
+            nextNode = leftPreTeleporter;
+            return ;
+        }
+        if (nextNode == leftTeleporter)
+        {
+            transform.position = new Vector2(16, 0);
+            prevNode = rightTeleporter;
+            nextNode = rightPreTeleporter;
+            return ;
+        }
         if (preNode == null)
         {
             Node prevInfo = prevNode.GetComponent<Node>(), nextInfo = nextNode.GetComponent<Node>();
-            if (prevInfo.UpNode != null && prevInfo.UpNode == nextNode && nextInfo.UpNode != null)
-            {
-                prevNode = nextNode;
-                nextNode = nextInfo.UpNode;
-                return ;
-            }
-            if (prevInfo.DownNode != null && prevInfo.DownNode == nextNode && nextInfo.DownNode != null)
-            {
-                prevNode = nextNode;
-                nextNode = nextInfo.DownNode;
-                return ;
-            }
-            if (prevInfo.LeftNode != null && prevInfo.LeftNode == nextNode && nextInfo.LeftNode != null)
-            {
-                prevNode = nextNode;
-                nextNode = nextInfo.LeftNode;
-                return ;
-            }
-            if (prevInfo.RightNode != null && prevInfo.RightNode == nextNode && nextInfo.RightNode != null)
-            {
-                prevNode = nextNode;
-                nextNode = nextInfo.RightNode;
-                return ;
-            }
+            foreach (Node n in nextInfo.neighbors)
+                if (n.transform.position.x != prevInfo.transform.position.x && n.transform.position.y == prevInfo.transform.position.y || n.transform.position.y != prevInfo.transform.position.y && n.transform.position.x == prevInfo.transform.position.x)
+                {
+                    prevNode = nextNode;
+                    nextNode = n.gameObject;
+                    return ;
+                }
+            
             prevNode = nextNode;
             isMoving = false;
             Rotate();
@@ -136,25 +135,26 @@ public class Player : MonoBehaviour
     void Rotate()
     {
         Node prevInfo = prevNode.GetComponent<Node>(), nextInfo = nextNode.GetComponent<Node>();
-        if (prevInfo.UpNode != null && prevInfo.UpNode == nextNode)
+        
+        if (nextInfo.transform.position.y > prevInfo.transform.position.y)
         {
             moveDir = Vector2.up;
             transform.rotation = Quaternion.Euler(0,0,90);
             return ;
         }
-        if (prevInfo.DownNode != null && prevInfo.DownNode == nextNode)
+        if (nextInfo.transform.position.y < prevInfo.transform.position.y)
         {
             moveDir = Vector2.down;
             transform.rotation = Quaternion.Euler(0,0,-90);
             return ;
         }
-        if (prevInfo.LeftNode != null && prevInfo.LeftNode == nextNode)
+        if (nextInfo.transform.position.x < prevInfo.transform.position.x)
         {
             moveDir = Vector2.left;
             transform.rotation = Quaternion.Euler(0,0,180);
             return ;
         }
-        if (prevInfo.RightNode != null && prevInfo.RightNode == nextNode)
+        if (nextInfo.transform.position.x > prevInfo.transform.position.x)
         {
             moveDir = Vector2.right;
             transform.rotation = Quaternion.Euler(0,0,0);
@@ -165,7 +165,13 @@ public class Player : MonoBehaviour
     void OnTriggerEnter2D(Collider2D col)
     {
         if (col.gameObject.tag == "Ghost")
-            GameManager.Damaged();
+        {
+            Ghost ghost = col.gameObject.GetComponent<Ghost>();
+            if (ghost.behaviourMode == "Chase" || ghost.behaviourMode == "Scatter")
+                GameManager.Damaged();
+            else if (col.gameObject.GetComponent<Ghost>().behaviourMode == "Frighten")
+                ghost.BecomeEaten();
+        }
         if (col.gameObject.tag == "Pellet")
         {
             GameManager.pellets--;

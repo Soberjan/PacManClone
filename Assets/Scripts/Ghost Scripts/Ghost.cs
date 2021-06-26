@@ -1,71 +1,70 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ghost : MonoBehaviour
+public abstract class Ghost : MonoBehaviour
 {
     public float speed = 3;
     public float cagedTime, chaseTime, scatterTime;
     public Transform scatterTarget, cageNodeOne, cageNodeTwo, cageNodeThree;
 
     public string behaviourMode;
-    public Transform currentTarget;
     protected Timer timer;
     protected PathBuilder pathBuilder;
     protected Player player;
     protected Color color;
 
     public GameObject nextNode;
+    public GameObject prevNode;
+
+    public GameObject forbiddenNode;
 
     void Update()
     {
-        UpdateTarget();
-        nextNode = pathBuilder.BuildPathToTarget(transform, currentTarget, color);
+        if (transform.position == nextNode.transform.position)
+        {
+            Transform target = UpdateTarget();
+            prevNode = nextNode;
+            nextNode = pathBuilder.BuildPathToTarget(nextNode, target.gameObject, color);
+        }
         MoveToNode(nextNode);
     }
 
-    void UpdateTarget()
+    Transform UpdateTarget()
     {
         if (behaviourMode == "Chase")
-            currentTarget = HandleChase();
+            return HandleChase();
         else if (behaviourMode == "Scatter")
-            currentTarget = HandleScatter();
+            return HandleScatter();
         else if (behaviourMode == "Frighten")
-            currentTarget = HandleFrighten();
+            return HandleFrighten();
         else if (behaviourMode == "Eaten")
-            currentTarget = HandleEaten();
+            return HandleEaten();
         else if (behaviourMode == "Caged")
-            currentTarget = HandleCaged();
+            return HandleCaged();
+        return transform; //как избавиться от этой ошибки?
     }
 
-    //ЗАМЕНИТЬ Transform на Vector2!!!!!!!!!!!!!!!!
-    public Transform currentNode;
-    protected virtual Transform HandleChase()
-    {
-        return transform;
-    }
-    protected virtual Transform HandleScatter()
+    public Transform currentNode; //переименовать в currentTarget?
+    protected abstract Transform HandleChase();
+    protected Transform HandleScatter()
     {
         if (timer.Out() || transform.position == scatterTarget.position)
         {
             timer.Set(20);
             behaviourMode = "Chase";
+            return HandleChase();
         }
         return scatterTarget;
     }
-    Transform HandleFrighten() //переход в frighten и currentNode буду обрабатывать отдельной функцией
+    Transform HandleFrighten()
     {
-        if (Vector2.Equals(transform.position, currentNode.position))
+        if (Vector2.Equals(transform.position, nextNode.transform.position))
         {
-            Node n = currentNode.gameObject.GetComponent<Node>();
+            Node n = nextNode.GetComponent<Node>();
             List<GameObject> l = new List<GameObject>();
-            if (n.LeftNode != null)
-                l.Add(n.LeftNode);
-            if (n.RightNode != null)
-                l.Add(n.RightNode);
-            if (n.UpNode != null)
-                l.Add(n.UpNode);
-            if (n.DownNode != null)
-                l.Add(n.DownNode);
+            foreach (Node node in n.neighbors)
+                if (node.transform != prevNode.transform && node != forbiddenNode)
+                    l.Add(node.gameObject);
             int a = Random.Range(0, l.Count);
             currentNode = l[a].transform;
         }
@@ -94,13 +93,47 @@ public class Ghost : MonoBehaviour
             timer.Set(chaseTime);
             behaviourMode = "Chase";
             currentNode = scatterTarget;
+            return HandleChase();
         }
         return currentNode;
     }
 
+    protected GameObject ChooseClosestNode(Vector2 pos)
+    {
+        Collider2D checkPos = Physics2D.OverlapPoint(pos);
+        if (checkPos != null && (Vector2)checkPos.transform.position == pos && checkPos.transform != nextNode.transform)
+            return checkPos.gameObject;
+        
+        if (checkPos != null)
+            checkPos.enabled = false;
+
+        List<Collider2D> raysInfo = new List<Collider2D>();
+        raysInfo.Add(Physics2D.Raycast(pos, new Vector2(-1, 0)).collider);
+        raysInfo.Add(Physics2D.Raycast(pos, new Vector2(1, 0)).collider);
+        raysInfo.Add(Physics2D.Raycast(pos, new Vector2(0, 1)).collider);
+        raysInfo.Add(Physics2D.Raycast(pos, new Vector2(0, -1)).collider);
+        
+        float minDist = Mathf.Infinity;
+        GameObject minNode = null;
+        foreach (Collider2D n in raysInfo)
+            if (n != null && (n.tag == "Node" || n.tag == "Teleporter") && Vector2.Distance(pos, n.transform.position) < minDist && n.gameObject.transform != nextNode.transform)
+            {
+                minDist = Vector2.Distance(pos, n.transform.position);
+                minNode = n.gameObject;
+            }
+
+        if (checkPos != null)
+            checkPos.enabled = true;
+        
+        return minNode;
+    }
+
     void MoveToNode(GameObject nextNode)
     {
-        transform.position = Vector2.MoveTowards(transform.position, nextNode.transform.position, speed * Time.deltaTime);
+        if (prevNode.tag == "Teleporter" && nextNode.tag == "Teleporter")
+            transform.position = nextNode.transform.position;
+        else
+            transform.position = Vector2.MoveTowards(transform.position, nextNode.transform.position, speed * Time.deltaTime);
     }
 
     public void BecomeFrighten() //-ed
@@ -125,5 +158,14 @@ public class Ghost : MonoBehaviour
 
             //логика изменения текстуры
         }
+    }
+    public void BecomeEaten()
+    {
+        GameManager.score += 100;
+
+        behaviourMode = "Eaten";
+        currentNode = cageNodeThree;
+
+        //логика изменения текстуры
     }
 }

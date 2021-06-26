@@ -15,6 +15,7 @@ public class PinkGhost : Ghost
 
     public void Init()
     {
+        nextNode = cageNodeThree.gameObject;
         timer.Set(20);
         behaviourMode = "Chase";
     }
@@ -33,7 +34,8 @@ public class PinkGhost : Ghost
         Vector2 targetPos = SetTarget();
         currentNode.position = targetPos;
         pinkTarget.position = targetPos;
-        return currentNode;
+
+        return ChooseClosestNode(targetPos).transform;
     }
 
     Vector2 SetTarget()

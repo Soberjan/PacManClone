@@ -19,6 +19,7 @@ public class BlueGhost : Ghost
     {
         timer.Set(15);
         behaviourMode = "Caged";
+        nextNode = cageNodeOne.gameObject;
         currentNode = cageNodeOne;
     }
 
@@ -36,7 +37,7 @@ public class BlueGhost : Ghost
         Vector2 targetPos = SetTarget();
         currentNode.position = targetPos;
         blueTarget.position = targetPos;
-        return currentNode;
+        return ChooseClosestNode(targetPos).transform;
     }
 
     Vector2 SetTarget()

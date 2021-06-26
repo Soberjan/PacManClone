@@ -13,6 +13,7 @@ TagManager:
   - Pellet
   - Fruit
   - Energizer
+  - Teleporter
   layers:
   - Default
   - TransparentFX

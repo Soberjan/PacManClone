@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RedGhost : Ghost
@@ -14,6 +13,7 @@ public class RedGhost : Ghost
 
     public void Init()
     {
+        nextNode = cageNodeThree.gameObject;
         timer.Set(20);
         behaviourMode = "Chase";
     }
@@ -26,6 +26,6 @@ public class RedGhost : Ghost
             behaviourMode = "Scatter";
             currentNode = scatterTarget;
         }
-        return player.transform;
+        return ChooseClosestNode(player.transform.position).transform;
     }
 }

@@ -38,6 +38,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Ghost Scripts\RedGhost.cs" />
      <Compile Include="Assets\Scripts\Node.cs" />
+     <Compile Include="Assets\Scripts\Fruit.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />
      <Compile Include="Assets\Scripts\Ghost Scripts\Ghost.cs" />
      <Compile Include="Assets\Scripts\Ghost Scripts\OrangeGhost.cs" />
@@ -45,11 +46,10 @@
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\Ghost Scripts\PathBuilder.cs" />
      <Compile Include="Assets\Scripts\Ghost Scripts\BlueGhost.cs" />
-     <Compile Include="Assets\Scripts\StartButton.cs" />
+     <Compile Include="Assets\Scripts\UI\StartButton.cs" />
      <Compile Include="Assets\Scripts\Ghost Scripts\PinkGhost.cs" />
      <Compile Include="Assets\Scripts\Score.cs" />
-     <Compile Include="Assets\Scripts\SmarterTimer.cs" />
-     <Compile Include="Assets\Scripts\Fruit.cs" />
+     <Compile Include="Assets\Scripts\UI\ExitButton.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />

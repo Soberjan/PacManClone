@@ -14,7 +14,7 @@ GameObject:
   m_Layer: 0
   m_Name: Node
   m_TagString: Node
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 7866945982896999795, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -44,10 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f843302dbd4ab4f41bb3127c1861d632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UpNode: {fileID: 0}
-  DownNode: {fileID: 0}
-  RightNode: {fileID: 0}
-  LeftNode: {fileID: 0}
+  neighbors: []
+  val: Infinity
 --- !u!58 &-574412649076830917
 CircleCollider2D:
   m_ObjectHideFlags: 0

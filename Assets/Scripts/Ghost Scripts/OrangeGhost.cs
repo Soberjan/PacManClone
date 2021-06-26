@@ -17,15 +17,14 @@ public class OrangeGhost : Ghost
     {
         behaviourMode = "Caged";
         timer.Set(5);
+        nextNode = cageNodeOne.gameObject;
         currentNode = cageNodeOne;
     }
 
     protected override Transform HandleChase()
     {
-        if (Vector2.Distance(transform.position, player.transform.position) > 4 && timer.Out())
-            return player.transform;
-        if (Vector2.Distance(transform.position, player.transform.position) <= 4)
-            timer.Set(1);
+        if (Vector2.Distance(transform.position, player.transform.position) > 4)
+            return ChooseClosestNode(player.transform.position).transform;
         if (currentNode.position == transform.position && currentNode == scatterTarget)
             currentNode = scatterTargetTwo;
         if (currentNode.position == transform.position && currentNode == scatterTargetTwo)

@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-    public GameObject UpNode, DownNode, RightNode, LeftNode;
+    public List<Node> neighbors;
     public float val = Mathf.Infinity;
 }
